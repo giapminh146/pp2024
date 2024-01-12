@@ -1,13 +1,13 @@
 def input_number_of_students():
     while True:
         try:
-            number_of_students = int(input("Enter number of students in a class: "))
+            number_of_students = int(input("Enter number of students to add: "))
             if number_of_students >= 0:
                 break
             else:
-                print("Please enter a positive number of students: ")
+                print("Please enter a positive number of students. ")
         except ValueError:
-            print("Please enter a valid number: ")
+            print("Please enter a valid number. ")
     return number_of_students
 
 
@@ -37,14 +37,21 @@ def check_for_valid_date(date):
         return False
 
 
-def input_student_info(number_of_students):
+def input_student_info(number_of_students, existing_student_ids):
     student_information_list = []
     if number_of_students == 0:
         print("There is no student in a class")
     else:
         for _ in range(number_of_students):
             student_information = {}
-            student_id = input("Enter the ID of the student: ")
+            while True:
+                student_id = input("Enter the ID of the student: ")
+                if student_id not in existing_student_ids:
+                    existing_student_ids.add(student_id)
+                    break
+                else:
+                    print("Please enter a unique ID for the student")
+
             student_name = input("Enter the name of the student: ")
 
             while True:
@@ -52,7 +59,8 @@ def input_student_info(number_of_students):
                 if check_for_valid_date(student_dob):
                     break
                 else:
-                    print("Please enter a valid format of date (YYYY-MM-DD): ")
+                    print("Please enter a valid format of date (YYYY-MM-DD). ")
+            print("\n")
 
             student_information["student_id"] = student_id
             student_information["student_name"] = student_name
@@ -64,25 +72,39 @@ def input_student_info(number_of_students):
 def input_number_of_courses():
     while True:
         try:
-            number_of_courses = int(input("Enter number of courses: "))
+            number_of_courses = int(input("Enter number of courses to add: "))
             if number_of_courses >= 0:
                 break
             else:
-                print("Please enter a positive number of courses: ")
+                print("Please enter a positive number of courses. ")
         except ValueError:
-            print("Please enter a valid number of courses: ")
+            print("Please enter a valid number of courses. ")
     return number_of_courses
 
 
-def input_course_info(number_of_courses):
+def input_course_info(number_of_courses, existing_course_ids, existing_course_names):
     course_information_list = []
     if number_of_courses == 0:
         print("There is no course.")
     else:
         for _ in range(number_of_courses):
             course_info = {}
-            course_id = input("Enter the ID of the course: ")
-            course_name = input("Enter the name of the course: ")
+            while True:
+                course_id = input("Enter the ID of the course: ")
+                if course_id not in existing_course_ids:
+                    existing_course_ids.add(course_id)
+                    break
+                else:
+                    print("Please enter a unique ID for the course.")
+
+            while True:
+                course_name = input("Enter the name of the course: ")
+                if course_name not in existing_course_names:
+                    existing_course_names.add(course_name)
+                    break
+                else:
+                    print("Please enter a unique course name.")
+            print("\n")
             course_info["course_id"] = course_id
             course_info["course_name"] = course_name
             course_information_list.append(course_info)
@@ -100,13 +122,15 @@ def select_courses(course_information_list):
         try:
             if choice == 0:
                 break
-            elif 0 < choice <= len(course_information_list):
+            elif 1 <= choice <= len(course_information_list):
                 selected_course = course_information_list[choice - 1]
                 selected_courses.append(selected_course)
+                print(f"Selected course: {selected_course['course_name']}")
+                break
             else:
-                print("Please enter a valid index or number 0 to exit: ")
+                print(f"Please enter a valid index (between 1 and {len(course_information_list)}) or number 0 to exit. ")
         except ValueError:
-            print("Please enter valid index or number 0 to exit: ")
+            print("Please enter valid index or number 0 to exit. ")
     return selected_courses
 
 
@@ -119,7 +143,7 @@ def input_marks(student_information_list, selected_courses):
             while True:
                 mark = input(f"Enter the mark for student {student_name} (ID: {student_id}): ")
                 if not mark.isdigit():
-                    print("Please enter a valid integer: ")
+                    print("Please enter a valid integer. ")
                     continue
                 mark = int(mark)
 
@@ -127,7 +151,9 @@ def input_marks(student_information_list, selected_courses):
                     print("Please enter a positive mark.")
                     continue
 
-                student["mark"] = mark
+                if "marks" not in student:
+                    student["marks"] = {}
+                student["marks"][course["course_name"]] = mark
                 break
 
 
@@ -160,16 +186,90 @@ def show_marks(student_information_list, course_information_list):
                 selected_course = course_information_list[choice - 1]
                 break
             else:
-                print("Please enter a valid index (or number 0 to exit): ")
+                print("Please enter a valid index (or number 0 to exit). ")
         except ValueError:
-            print("Please enter a valid index (or number 0 to exit): ")
+            print("Please enter a valid index (or number 0 to exit). ")
 
     print(f"Marks for {selected_course["course_name"]}:\n")
     for i, student in enumerate(student_information_list, 1):
-        mark = student.get("mark", None)
+        marks_dict = student.get("marks", {})
+        mark = marks_dict.get(selected_course["course_name"], None)
         student_name = student["student_name"]
         student_id = student["student_id"]
         print(f"{i}. {student_name} - {student_id}: {mark if mark is not None else 'N/A'}")
 
 
 def main():
+    number_of_students = 0
+    student_information_list = []
+    number_of_courses = 0
+    course_information_list = []
+    selected_courses = []
+    existing_course_ids = set()
+    existing_course_names = set()
+    existing_student_ids = set()
+
+    print("Welcome to the student management system")
+    while True:
+        print("\nPlease select an option below: ")
+        print("1. Input number of students")
+        print("2. Input students information")
+        print("3. Input number of courses")
+        print("4. Input course information")
+        print("5. Select courses")
+        print("6. Input marks")
+        print("7. List courses")
+        print("8. List students")
+        print("9. Show marks")
+        print("0. Exit")
+
+        choice = input("Your choice: ")
+
+        try:
+            choice = int(choice)
+        except ValueError:
+            print("Please enter a valid number.")
+            continue
+
+        if choice == 1:
+            number_of_students = input_number_of_students()
+        elif choice == 2:
+            if number_of_students == 0:
+                print("There is currently no student. Please input the number of student first.")
+            else:
+                student_information_list.extend(input_student_info(number_of_students, existing_student_ids))
+        elif choice == 3:
+            number_of_courses = input_number_of_courses()
+        elif choice == 4:
+            if number_of_courses == 0:
+                print("There is currently no course. Please input the number of course first.")
+            else:
+                course_information_list.extend(input_course_info(number_of_courses, existing_course_ids, existing_course_names))
+        elif choice == 5:
+            if not course_information_list:
+                print("Please input course information first.")
+            else:
+                selected_courses = select_courses(course_information_list)
+        elif choice == 6:
+            if not student_information_list or not selected_courses:
+                print("Please input the student information and select the courses first.")
+            else:
+                input_marks(student_information_list, selected_courses)
+        elif choice == 7:
+            list_courses(course_information_list)
+        elif choice == 8:
+            list_students(student_information_list)
+        elif choice == 9:
+            if not student_information_list or not course_information_list:
+                print("Please input student and course information first.")
+            else:
+                show_marks(student_information_list, course_information_list)
+        elif choice == 0:
+            print("Exited.")
+            break
+        else:
+            print("Invalid option. Please choose a valid option.")
+
+
+if __name__ == "__main__":
+    main()
