@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 class Student:
@@ -20,14 +21,37 @@ class Student:
     def get_marks(self):
         return self.__marks
 
+    def calc_gpa(self, courses):
+        marks_list = []
+        credits_list = []
+
+        for course in courses:
+            course_name = course.get_course_name()
+            if course_name in self.__marks:
+                mark = self.__marks[course_name]
+                credits = course.get_credits()
+                marks_list.append(mark * credits)
+                credits_list.append(credits)
+
+        marks_array = np.array(marks_list)
+        credits_array = np.array(credits_list)
+
+        total_credits = np.sum(credits_array)
+        if total_credits != 0:
+            sum = np.sum(marks_array)
+            return sum / total_credits
+        else:
+            return 0
+
     def __str__(self):
         return f"Name: {self.__student_name}, ID: {self.__student_id}, Date of birth: {self.__student_dob}"
 
 
 class Course:
-    def __init__(self, course_id, course_name):
+    def __init__(self, course_id, course_name, credits):
         self.__course_id = course_id
         self.__course_name = course_name
+        self.__credits = credits
 
     def get_course_id(self):
         return self.__course_id
@@ -35,8 +59,11 @@ class Course:
     def get_course_name(self):
         return self.__course_name
 
+    def get_credits(self):
+        return self.__credits
+
     def __str__(self):
-        return f"{self.__course_name} - {self.__course_id}"
+        return f"{self.__course_name} - {self.__course_id} - ({self.__credits} credits)"
 
 
 class ManagementSystem:
@@ -153,10 +180,22 @@ class ManagementSystem:
                     else:
                         print("Please enter a unique course name.")
 
+                while True:
+                    credits = input("Enter the credits for the course: ")
+                    try:
+                        credits = int(credits)
+                        if credits <= 0:
+                            print("Please enter a valid credits for the course.")
+                        else:
+                            break
+                    except ValueError:
+                        print("Please enter a valid credits for the course.")
+
                 print("\n")
                 course_info["course_id"] = course_id
                 course_info["course_name"] = course_name
-                a_course = Course(course_id, course_name)
+                course_info["credits"] = credits
+                a_course = Course(course_id, course_name, credits)
                 self.get_courses().append(a_course)
                 course_information_list.append(course_info)
 
@@ -212,6 +251,7 @@ class ManagementSystem:
                     break
                 except ValueError:
                     print("Please enter a valid mark.")
+        self.__selected_courses.clear()
 
     def list_courses(self):
         if len(self.get_courses()) == 0:
@@ -252,6 +292,18 @@ class ManagementSystem:
             student_id = student.get_student_id()
             print(f"{i}. {student_name} - {student_id}: {mark if mark is not None else 'N/A'}")
 
+    def sort_gpa(self):
+        courses = self.get_courses()
+        students_gpa = []
+
+        for student in self.get_students():
+            student_gpa = student.calc_gpa(courses)
+            students_gpa.append((student, student_gpa))
+        sorted_students = sorted(students_gpa, key=lambda x: x[1], reverse=True)
+        sorted_students = [student[0] for student in sorted_students]
+
+        return sorted_students
+
 
 def main():
     system = ManagementSystem()
@@ -270,6 +322,7 @@ def main():
         print("7. List courses")
         print("8. List students")
         print("9. Show marks")
+        print("10. Sort students by GPA descending")
         print("0. Exit")
 
         choice = input("Your choice: ")
@@ -317,6 +370,14 @@ def main():
                 print("Please input student and course information first.")
             else:
                 system.show_marks()
+        elif choice == 10:
+            if not system.get_students() or not system.get_courses():
+                print("Please input student and course information first.")
+            else:
+                sorted_students = system.sort_gpa()
+                print("Sorted students by GPA descending: ")
+                for i, student in enumerate(sorted_students, 1):
+                    print(f"{i}. {student} - GPA: {student.calc_gpa(system.get_courses()):.2f}")
         elif choice == 0:
             print("Exited.")
             break
