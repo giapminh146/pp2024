@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import curses
 
 
 class Student:
@@ -81,16 +82,31 @@ class ManagementSystem:
     def get_selected_courses(self):
         return self.__selected_courses
 
-    def input_number_of_students(self):
+    def input_number_of_students(self, stdscr):
+        curses.echo()
+        stdscr.clear()
+        stdscr.addstr("Enter number of students to add: ")
+        stdscr.refresh()
+        number_of_students = stdscr.getstr().decode()
+        stdscr.clear()
+        stdscr.refresh()
         while True:
             try:
-                number_of_students = int(input("Enter number of students to add: "))
+                number_of_students = int(number_of_students)
                 if number_of_students >= 0:
                     return number_of_students
                 else:
-                    print("Please enter a positive number of students. ")
+                    stdscr.clear()
+                    stdscr.addstr("Please enter a positive number of students.\n")
+                    stdscr.addstr("Enter number of students to add: ")
+                    stdscr.refresh()
+                    number_of_students = stdscr.getstr().decode()
             except ValueError:
-                print("Please enter a valid number. ")
+                stdscr.clear()
+                stdscr.addstr("Please enter a valid number.\n")
+                stdscr.addstr("Enter number of students to add: ")
+                stdscr.refresh()
+                number_of_students = stdscr.getstr().decode()
 
     def check_for_valid_date(self, date):
         if len(date) != 10:
@@ -117,28 +133,40 @@ class ManagementSystem:
         except ValueError:
             return False
 
-    def input_student_info(self, number_of_students):
+    def input_student_info(self, number_of_students, stdscr):
         student_information_list = []
         if number_of_students == 0:
-            print("There is no student in a class")
+            stdscr.addstr("There is no student in a class")
+            stdscr.refresh()
         else:
             for _ in range(number_of_students):
                 student_information = {}
                 while True:
-                    student_id = input("Enter the ID of the student: ")
+                    stdscr.addstr("Enter the ID of the student: ")
+                    stdscr.refresh()
+                    student_id = stdscr.getstr().decode()
                     if student_id not in [student.get_student_id() for student in self.get_students()]:
                         break
                     else:
-                        print("Please enter a unique ID for the student.")
+                        stdscr.clear()
+                        stdscr.addstr("Please enter a unique ID for the student.\n")
+                        stdscr.refresh()
 
-                student_name = input("Enter the name of the student: ")
+                stdscr.clear()
+                stdscr.addstr("Enter the name of the student: ")
+                stdscr.refresh()
+                student_name = stdscr.getstr().decode()
                 while True:
-                    student_dob = input("Enter the date of birth for the student (YYYY-MM-DD): ")
+                    stdscr.addstr("Enter the date of birth for the student (YYYY-MM-DD): ")
+                    stdscr.refresh()
+                    student_dob = stdscr.getstr().decode()
                     if self.check_for_valid_date(student_dob):
                         break
                     else:
-                        print("Please enter a valid format of date (YYYY-MM-DD).")
-                print("\n")
+                        stdscr.clear()
+                        stdscr.addstr("Please enter a valid format of date (YYYY-MM-DD).\n")
+                        stdscr.refresh()
+                stdscr.addstr("\n")
 
                 student_information["student_id"] = student_id
                 student_information["student_name"] = student_name
@@ -148,50 +176,80 @@ class ManagementSystem:
                 student_information_list.append(student_information)
         return student_information_list
 
-    def input_number_of_courses(self):
+    def input_number_of_courses(self, stdscr):
+        curses.echo()
+        stdscr.clear()
+        stdscr.addstr("Enter number of courses to add: ")
+        stdscr.refresh()
+        number_of_courses = stdscr.getstr().decode()
+        stdscr.clear()
+        stdscr.refresh()
         while True:
             try:
-                number_of_courses = int(input("Enter number of courses to add: "))
+                number_of_courses = int(number_of_courses)
                 if number_of_courses >= 0:
                     return number_of_courses
                 else:
-                    print("Please enter a positive number of courses. ")
+                    stdscr.clear()
+                    stdscr.addstr("Please enter a positive number of courses.\n")
+                    stdscr.addstr("Enter number of courses to add: ")
+                    stdscr.refresh()
+                    number_of_courses = stdscr.getstr().decode()
             except ValueError:
-                print("Please enter a valid number of courses. ")
+                stdscr.clear()
+                stdscr.addstr("Please enter a valid number of courses.\n")
+                stdscr.addstr("Enter number of courses to add: ")
+                stdscr.refresh()
+                number_of_courses = stdscr.getstr().decode()
 
-    def input_course_info(self, number_of_courses):
+    def input_course_info(self, number_of_courses, stdscr):
         course_information_list = []
         if number_of_courses == 0:
-            print("There is no course.")
+            stdscr.addstr("There is no course.")
+            stdscr.refresh()
         else:
             for _ in range(number_of_courses):
                 course_info = {}
                 while True:
-                    course_id = input("Enter the ID of the course: ")
+                    stdscr.addstr("Enter the ID of the course: ")
+                    stdscr.refresh()
+                    course_id = stdscr.getstr().decode()
                     if course_id not in [course.get_course_id() for course in self.get_courses()]:
                         break
                     else:
-                        print("Please enter a unique ID for the course.")
+                        stdscr.clear()
+                        stdscr.addstr("Please enter a unique ID for the course.\n")
+                        stdscr.refresh()
 
                 while True:
-                    course_name = input("Enter the name for the course: ")
+                    stdscr.clear()
+                    stdscr.addstr("Enter the name for the course: ")
+                    stdscr.refresh()
+                    course_name = stdscr.getstr().decode()
                     if course_name not in [course.get_course_name() for course in self.get_courses()]:
                         break
                     else:
-                        print("Please enter a unique course name.")
+                        stdscr.addstr("Please enter a unique course name.\n")
+                        stdscr.refresh()
 
                 while True:
-                    credits = input("Enter the credits for the course: ")
+                    stdscr.clear()
+                    stdscr.addstr("Enter the credits for the course: ")
+                    stdscr.refresh()
+                    credits = stdscr.getstr().decode()
                     try:
                         credits = int(credits)
                         if credits <= 0:
-                            print("Please enter a valid credits for the course.")
+                            stdscr.addstr("Please enter a valid credits for the course.\n")
+                            stdscr.refresh()
                         else:
                             break
                     except ValueError:
-                        print("Please enter a valid credits for the course.")
+                        stdscr.addstr("Please enter a valid credits for the course.\n")
+                        stdscr.refresh()
 
-                print("\n")
+                stdscr.clear()
+                stdscr.addstr("\n")
                 course_info["course_id"] = course_id
                 course_info["course_name"] = course_name
                 course_info["credits"] = credits
@@ -201,98 +259,120 @@ class ManagementSystem:
 
         return course_information_list
 
-    def select_courses(self):
-        print("Available courses:")
+    def select_courses(self, stdscr):
+        stdscr.clear()
+        stdscr.addstr("Available courses:\n")
         for i, course in enumerate(self.get_courses(), 1):
-            print(f"{i}. {course}")
+            stdscr.addstr(f"{i}. {course}\n")
 
         selected_courses = []
         while True:
-            choice = int(input("Enter the index number of the course to select the course (0 to exit): "))
+            stdscr.addstr("Enter the index number of the course to select the course (0 to exit): ")
+            stdscr.refresh()
+            choice = stdscr.getstr().decode()
             try:
+                choice = int(choice)
                 if choice == 0:
                     break
                 elif 1 <= choice <= len(self.get_courses()):
                     selected_course = self.get_courses()[choice - 1]
                     self.get_selected_courses().add(selected_course)
-                    print(f"Selected course: {selected_course}")
+                    stdscr.addstr(f"Selected course: {selected_course}\n")
                     break
                 else:
-                    print(f"Please enter a valid index (between 1 and {len(self.get_courses())}) or number 0 to exit.")
+                    stdscr.addstr(f"Please enter a valid index (between 1 and {len(self.get_courses())}) or number 0 to exit.\n")
+                    stdscr.refresh()
             except ValueError:
-                print(f"Please enter valid index or number 0 to exit.")
+                stdscr.addstr(f"Please enter valid index or number 0 to exit.\n")
+                stdscr.refresh()
 
+        stdscr.refresh()
         return selected_courses
 
-    def input_marks(self):
+    def input_marks(self, stdscr):
         selected_course = next(iter(self.get_selected_courses()), None)
         if selected_course is None:
-            print("Please select a course first.")
+            stdscr.addstr("Please select a course first.\n")
+            stdscr.refresh()
             return
 
-        print(f"You are currently in course: {selected_course}")
+        stdscr.addstr(f"You are currently in course: {selected_course}\n")
         for student in self.get_students():
             student_id = student.get_student_id()
             student_name = student.get_student_name()
 
             if selected_course.get_course_name() in student.get_marks():
-                print(f"Mark already entered for {student_name} (ID: {student_id}) in course: {selected_course}")
+                stdscr.addstr(f"Mark already entered for {student_name} (ID: {student_id}) in course: {selected_course}\n")
                 continue
 
             while True:
-                mark = input(f"Enter the mark for student {student_name} (ID: {student_id}): ")
+                stdscr.addstr(f"Enter the mark for student {student_name} (ID: {student_id}): ")
+                stdscr.refresh()
+                mark = stdscr.getstr().decode()
                 try:
                     mark = float(mark)
                     if mark < 0.0:
-                        print("Please enter a positive mark.")
+                        stdscr.addstr("Please enter a positive mark.\n")
+                        stdscr.refresh()
                         continue
                     mark = math.floor(mark * 10) / 10
                     student.get_marks()[selected_course.get_course_name()] = mark
                     break
                 except ValueError:
-                    print("Please enter a valid mark.")
+                    stdscr.addstr("Please enter a valid mark.\n")
+                    stdscr.refresh()
         self.__selected_courses.clear()
 
-    def list_courses(self):
+    def list_courses(self, stdscr):
+        stdscr.clear()
         if len(self.get_courses()) == 0:
-            print("No course available.")
+            stdscr.addstr("No course available.\n")
         else:
-            print("Available courses:")
+            stdscr.addstr("Available courses:\n")
             for i, course in enumerate(self.get_courses(), 1):
-                print(f"{i}. {course}")
+                stdscr.addstr(f"{i}. {course}\n")
+        stdscr.refresh()
 
-    def list_students(self):
+    def list_students(self, stdscr):
+        stdscr.clear()
         if len(self.get_students()) == 0:
-            print("No student available.")
+            stdscr.addstr("No student available.\n")
         else:
-            print("Students list: ")
+            stdscr.addstr("Students list:\n")
             for i, student in enumerate(self.get_students(), 1):
-                print(f"{i}. {student}")
+                stdscr.addstr(f"{i}. {student}\n")
+        stdscr.refresh()
 
-    def show_marks(self):
-        self.list_courses()
+    def show_marks(self, stdscr):
+        self.list_courses(stdscr)
         while True:
+            stdscr.addstr("Enter the index number of the course to show marks (0 to exit): ")
+            stdscr.refresh()
+            choice = stdscr.getstr().decode()
             try:
-                choice = int(input("Enter the index number of the course to show marks (0 to exit): "))
+                choice = int(choice)
                 if choice == 0:
                     return
                 elif 0 < choice <= len(self.get_courses()):
                     selected_course = self.get_courses()[choice - 1]
                     break
                 else:
-                    print("Please enter a valid index (or number 0 to exit). ")
+                    stdscr.addstr("Please enter a valid index (or number 0 to exit).\n")
+                    stdscr.refresh()
             except ValueError:
-                print("Please enter a valid index (or number 0 to exit). ")
+                stdscr.addstr("Please enter a valid index (or number 0 to exit).\n")
+                stdscr.refresh()
 
-        print(f"Marks for {selected_course}:\n")
+        stdscr.addstr(f"Marks for {selected_course}:\n")
         for i, student in enumerate(self.get_students(), 1):
             marks_dict = student.get_marks()
             mark = marks_dict.get(selected_course.get_course_name(), None)
             student_name = student.get_student_name()
             student_id = student.get_student_id()
-            print(f"{i}. {student_name} - {student_id}: {mark if mark is not None else 'N/A'}")
+            stdscr.addstr(f"{i}. {student_name} - {student_id}: {mark if mark is not None else 'N/A'}\n")
+        stdscr.refresh()
 
-    def sort_gpa(self):
+    def sort_gpa(self, stdscr):
         courses = self.get_courses()
         students_gpa = []
 
@@ -305,85 +385,117 @@ class ManagementSystem:
         return sorted_students
 
 
-def main():
+def main(stdscr):
+    curses.curs_set(0)
+    curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+    curses.init_pair(2, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_RED, curses.COLOR_BLACK)
+    curses.init_pair(4, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
+    curses.init_pair(6, curses.COLOR_WHITE, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_BLACK, curses.COLOR_WHITE)
+
     system = ManagementSystem()
     number_of_students = 0
     number_of_courses = 0
 
-    print("Welcome to the student management system")
+    stdscr.addstr("Welcome to the student management system\n", curses.color_pair(4))
+    stdscr.refresh()
     while True:
-        print("\nPlease select an option below: ")
-        print("1. Input number of students")
-        print("2. Input students information")
-        print("3. Input number of courses")
-        print("4. Input course information")
-        print("5. Select courses")
-        print("6. Input marks")
-        print("7. List courses")
-        print("8. List students")
-        print("9. Show marks")
-        print("10. Sort students by GPA descending")
-        print("0. Exit")
+        stdscr.addstr("\nPlease select an option below: \n", curses.color_pair(2) | curses.A_BOLD)
+        stdscr.addstr("1. Input number of students\n")
+        stdscr.addstr("2. Input students information\n")
+        stdscr.addstr("3. Input number of courses\n")
+        stdscr.addstr("4. Input course information\n")
+        stdscr.addstr("5. Select courses\n")
+        stdscr.addstr("6. Input marks\n")
+        stdscr.addstr("7. List courses\n")
+        stdscr.addstr("8. List students\n")
+        stdscr.addstr("9. Show marks\n")
+        stdscr.addstr("10. Sort students by GPA descending\n")
+        stdscr.addstr("0. Exit\n")
 
-        choice = input("Your choice: ")
-        print("\n")
+        stdscr.addstr("Your choice: ")
+        stdscr.refresh()
+        curses.echo()
+        choice = stdscr.getstr().decode()
+        stdscr.clear()
+        stdscr.refresh()
         try:
             choice = int(choice)
         except ValueError:
-            print("Please enter a valid number.")
+            stdscr.addstr("Please enter a valid number.\n")
+            stdscr.refresh()
             continue
 
         if choice == 1:
-            number_of_students = system.input_number_of_students()
-            print("Input successfully")
+            number_of_students = system.input_number_of_students(stdscr)
+            stdscr.addstr("Input successfully\n")
+            stdscr.refresh()
         elif choice == 2:
             if number_of_students == 0:
-                print("There is currently no student. Please input the number of student first.")
+                stdscr.addstr("There is currently no student. Please input the number of student first.\n")
+                stdscr.refresh()
             else:
-                system.input_student_info(number_of_students)
-                print("Input successfully")
+                system.input_student_info(number_of_students, stdscr)
+                stdscr.addstr("Input successfully\n")
+                stdscr.refresh()
         elif choice == 3:
-            number_of_courses = system.input_number_of_courses()
-            print("Input successfully")
+            number_of_courses = system.input_number_of_courses(stdscr)
+            stdscr.addstr("Input successfully\n")
+            stdscr.refresh()
         elif choice == 4:
             if number_of_courses == 0:
-                print("There is currently no course. Please input the number of course first.")
+                stdscr.addstr("There is currently no course. Please input the number of course first.\n")
+                stdscr.refresh()
             else:
-                system.input_course_info(number_of_courses)
-                print("Input successfully")
+                system.input_course_info(number_of_courses, stdscr)
+                stdscr.addstr("Input successfully\n")
+                stdscr.refresh()
         elif choice == 5:
             if not system.get_courses():
-                print("Please input course information first. ")
+                stdscr.addstr("Please input course information first.\n")
+                stdscr.refresh()
             else:
-                system.select_courses()
+                system.select_courses(stdscr)
         elif choice == 6:
             if not system.get_students() or not system.get_selected_courses():
-                print("Please input the student information and select the course first.")
+                stdscr.addstr("Please input the student information and select the course first.\n")
+                stdscr.refresh()
             else:
-                system.input_marks()
+                system.input_marks(stdscr)
+                stdscr.addstr("Input successfully\n")
+                stdscr.refresh()
         elif choice == 7:
-            system.list_courses()
+            system.list_courses(stdscr)
+            stdscr.refresh()
         elif choice == 8:
-            system.list_students()
+            system.list_students(stdscr)
+            stdscr.refresh()
         elif choice == 9:
             if not system.get_students() or not system.get_courses():
-                print("Please input student and course information first.")
+                stdscr.addstr("Please input student and course information first.\n")
+                stdscr.refresh()
             else:
-                system.show_marks()
+                system.show_marks(stdscr)
         elif choice == 10:
             if not system.get_students() or not system.get_courses():
-                print("Please input student and course information first.")
+                stdscr.addstr("Please input student and course information first.\n")
+                stdscr.refresh()
             else:
-                sorted_students = system.sort_gpa()
-                print("Sorted students by GPA descending: ")
+                sorted_students = system.sort_gpa(stdscr)
+                stdscr.addstr("Sorted students by GPA descending: \n")
                 for i, student in enumerate(sorted_students, 1):
-                    print(f"{i}. {student} - GPA: {student.calc_gpa(system.get_courses()):.2f}")
+                    stdscr.addstr(f"{i}. {student} - GPA: {student.calc_gpa(system.get_courses()):.2f}\n")
+                stdscr.refresh()
         elif choice == 0:
-            print("Exited.")
+            stdscr.addstr("Exited.\n")
+            stdscr.refresh()
             break
         else:
-            print("Invalid option. Please choose a valid option.")
+            stdscr.addstr("Invalid option. Please choose a valid option.\n")
+            stdscr.refresh()
 
 
 if __name__ == "__main__":
-    main()
+    curses.wrapper(main)
