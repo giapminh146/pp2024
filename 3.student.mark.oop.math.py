@@ -233,18 +233,19 @@ class ManagementSystem:
                         stdscr.refresh()
 
                 while True:
-                    stdscr.clear()
                     stdscr.addstr("Enter the credits for the course: ")
                     stdscr.refresh()
                     credits = stdscr.getstr().decode()
                     try:
                         credits = int(credits)
                         if credits <= 0:
+                            stdscr.clear()
                             stdscr.addstr("Please enter a valid credits for the course.\n")
                             stdscr.refresh()
                         else:
                             break
                     except ValueError:
+                        stdscr.clear()
                         stdscr.addstr("Please enter a valid credits for the course.\n")
                         stdscr.refresh()
 
@@ -312,6 +313,7 @@ class ManagementSystem:
                 try:
                     mark = float(mark)
                     if mark < 0.0:
+                        stdscr.clear()
                         stdscr.addstr("Please enter a positive mark.\n")
                         stdscr.refresh()
                         continue
