@@ -1,4 +1,5 @@
-import curses
+import tkinter as tk
+from tkinter import messagebox
 import math
 import os
 import pickle
@@ -93,34 +94,8 @@ def decompress_files():
             print(f"Error decompressing files: {IOError}")
 
 
-def input_number_of_students(self, stdscr):
-    curses.echo()
-    stdscr.clear()
-    stdscr.addstr("Enter number of students to add: ")
-    stdscr.refresh()
-    number_of_students = stdscr.getstr().decode()
-    stdscr.clear()
-    stdscr.refresh()
-    while True:
-        try:
-            number_of_students = int(number_of_students)
-            if number_of_students >= 0:
-                return number_of_students
-            else:
-                stdscr.clear()
-                stdscr.addstr("Please enter a positive number of students.\n")
-                stdscr.addstr("Enter number of students to add: ")
-                stdscr.refresh()
-                number_of_students = stdscr.getstr().decode()
-        except ValueError:
-            stdscr.clear()
-            stdscr.addstr("Please enter a valid number.\n")
-            stdscr.addstr("Enter number of students to add: ")
-            stdscr.refresh()
-            number_of_students = stdscr.getstr().decode()
 
-
-def check_for_valid_date(self, date):
+def check_for_valid_date(date):
     if len(date) != 10:
         return False
 
@@ -139,59 +114,108 @@ def check_for_valid_date(self, date):
 
         if day < 1 or day > 31:
             return False
+
         if year < 0:
             return False
+
         return True
     except ValueError:
         return False
 
-
-def input_student_info(self, number_of_students, stdscr):
+def input_student_info(number_of_students):
     student_information_list = []
-    if number_of_students == 0:
-        stdscr.addstr("There is no student in a class")
-        stdscr.refresh()
-    else:
-        for _ in range(number_of_students):
-            student_information = {}
-            while True:
-                stdscr.addstr("Enter the ID of the student: ")
-                stdscr.refresh()
-                student_id = stdscr.getstr().decode()
-                if student_id not in [student.get_student_id() for student in self.get_students()]:
-                    break
-                else:
-                    stdscr.clear()
-                    stdscr.addstr("Please enter a unique ID for the student.\n")
-                    stdscr.refresh()
 
-            stdscr.clear()
-            stdscr.addstr("Enter the name of the student: ")
-            stdscr.refresh()
-            student_name = stdscr.getstr().decode()
-            while True:
-                stdscr.addstr("Enter the date of birth for the student (YYYY-MM-DD): ")
-                stdscr.refresh()
-                student_dob = stdscr.getstr().decode()
-                if self.check_for_valid_date(student_dob):
-                    break
-                else:
-                    stdscr.clear()
-                    stdscr.addstr("Please enter a valid format of date (YYYY-MM-DD).\n")
-                    stdscr.refresh()
-            stdscr.addstr("\n")
+    for _ in range(number_of_students):
+        student_information = {}
 
-            student_information["student_id"] = student_id
-            student_information["student_name"] = student_name
-            student_information["student_DoB"] = student_dob
-            a_student = Student(student_id, student_name, student_dob)
-            self.get_students().append(a_student)
-            student_information_list.append(student_information)
+        student_id = student_id_entry.get()
+        student_name = student_name_entry.get()
+        student_dob = student_dob_entry.get()
+
+        if student_id not in [student.get_student_id() for student in get_students()]:
+            messagebox.showerror("Error", "Please enter a unique ID for the student.")
+            return
+
+        if not check_for_valid_date(student_dob):
+            messagebox.showerror("Error", "Please enter a valid format of date (YYYY-MM-DD).")
+            return
+
+        student_information["student_id"] = student_id
+        student_information["student_name"] = student_name
+        student_information["student_DoB"] = student_dob
+
+        a_student = Student(student_id, student_name, student_dob)
+        student_information_list.append(student_information)
+
     save_students_info(student_information_list)
-    return student_information_list
+
+def input_number_of_students():
+    top_window = tk.Toplevel()
+    top_window.title("Enter number of students")
+    top_window.geometry("400x200")
+
+    no_label = tk.Label(top_window, text="Enter number of students to add:")
+    no_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+    number_of_students_entry = tk.Entry(top_window)
+    number_of_students_entry.grid(row=0, column=1, padx=5, pady=5, sticky="e")
+
+    def close_window():
+        top_window.destroy()
+
+    def save_number_of_student():
+        error_label.config(text="")  # Reset error labels
+        error2_label.config(text="")
+
+        try:
+            number_of_students = int(number_of_students_entry.get())
+            if number_of_students >= 0:
+                input_student_info(number_of_students)
+                success_label.config(text="Save Successful!", fg="green")
+            else:
+                error_label.config(text="Please enter a valid positive number")
+        except ValueError:
+            error2_label.config(text="Please enter a valid number")
+
+    submit_button = tk.Button(top_window, text="Submit", command=save_number_of_student)
+    submit_button.grid(row=1, column=0, padx=10, pady=10, sticky="e")
+
+    back_button = tk.Button(top_window, text="Back", command=close_window)
+    back_button.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+
+    error_label = tk.Label(top_window, text="", fg="red")
+    error_label.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
+
+    error2_label = tk.Label(top_window, text="", fg="red")
+    error2_label.grid(row=3, column=0, padx=5, pady=5, columnspan=2)
+
+    success_label = tk.Label(top_window, text="", fg="green")
+    success_label.grid(row=4, column=0, padx=5, pady=5, columnspan=2)
+
+    window =tk.Tk()
+    window.title("Enter student information")
+
+    student_id_label = tk.Label(window, text="Student ID:")
+    student_id_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+    student_id_entry = tk.Entry(window)
+    student_id_entry.grid(row=0, column=1, padx=5, pady=5)
+
+    student_name_label = tk.Label(window, text="Student Name:")
+    student_name_label.grid(row=1, column=0, padx=5, pady=5, sticky="w")
+    student_name_entry = tk.Entry(window)
+    student_name_entry.grid(row=1, column=1, padx=5, pady=5)
+
+    student_dob_label = tk.Label(window, text="Date of Birth (YYYY-MM-DD):")
+    student_dob_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+    student_dob_entry = tk.Entry(window)
+    student_dob_entry.grid(row=2, column=1, padx=5, pady=5)
+
+    # Button to open the input window
+    open_button = tk.Button(window, text="Open Input Window", command=input_number_of_students)
+    open_button.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
 
 
-def input_number_of_courses(self, stdscr):
+'''def input_number_of_courses(self, stdscr):
     curses.echo()
     stdscr.clear()
     stdscr.addstr("Enter number of courses to add: ")
@@ -311,4 +335,4 @@ def input_marks(self, stdscr):
                 stdscr.addstr("Please enter a valid mark.\n")
                 stdscr.refresh()
     save_marks(self, stdscr)
-    self.get_selected_courses().clear()
+    self.get_selected_courses().clear()'''

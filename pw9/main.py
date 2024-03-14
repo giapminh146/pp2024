@@ -1,345 +1,225 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog, simpledialog
 from domains.management_system import ManagementSystem
-from domains.student import Student
-from domains.course import Course
+import pickle
 
-class StudentManagementGUI:
+class MainApplication:
     def __init__(self, master):
+        self.selected_course = None
         self.master = master
         self.master.title("Student Management System")
+
         self.system = ManagementSystem()
+        self.number_of_students = 0
+        self.number_of_courses = 0
 
-        self.create_menu()
+        self.create_widgets()
 
-    def create_menu(self):
-        menu = tk.Menu(self.master)
-        self.master.config(menu=menu)
+    def simple_selection_dialog(self, title, options):
+        def on_select(event):
+            selection_index = listbox.curselection()
+            if selection_index:
+                selected_option.set(options[selection_index[0]])
+                dialog.destroy()
 
-        file_menu = tk.Menu(menu)
-        menu.add_cascade(label="File", menu=file_menu)
-        file_menu.add_command(label="Exit", command=self.master.quit)
+        dialog = tk.Tk()
+        dialog.title(title)
+        dialog.geometry('300x200')
 
-        student_menu = tk.Menu(menu)
-        menu.add_cascade(label="Students", menu=student_menu)
-        student_menu.add_command(label="Input Number of Students", command=self.input_number_of_students)
-        student_menu.add_command(label="Input Student Information", command=self.input_student_info)
+        selected_option = tk.StringVar(value=None)
 
-        course_menu = tk.Menu(menu)
-        menu.add_cascade(label="Courses", menu=course_menu)
-        course_menu.add_command(label="Input Number of Courses", command=self.input_number_of_courses)
-        course_menu.add_command(label="Input Course Information", command=self.input_course_info)
+        listbox = tk.Listbox(dialog)
+        listbox.pack(fill=tk.BOTH, expand=True)
+        for option in options:
+            listbox.insert(tk.END, option)
 
-        action_menu = tk.Menu(menu)
-        menu.add_cascade(label="Actions", menu=action_menu)
-        action_menu.add_command(label="Select Courses", command=self.select_courses)
-        action_menu.add_command(label="Input Marks", command=self.input_marks)
-        action_menu.add_command(label="List Courses", command=self.list_courses)
-        action_menu.add_command(label="List Students", command=self.list_students)
-        action_menu.add_command(label="Show Marks", command=self.show_marks)
-        action_menu.add_command(label="Sort Students by GPA", command=self.sort_students_by_gpa)
+        listbox.bind('<<ListboxSelect>>', on_select)
+
+        dialog.mainloop()
+        return selected_option.get()
+
+    def create_widgets(self):
+        tk.Label(self.master, text="Welcome to the Student Management System").pack()
+
+        tk.Button(self.master, text="Input number of students", command=self.input_number_of_students).pack()
+        tk.Button(self.master, text="Input students information", command=self.input_student_info).pack()
+        tk.Button(self.master, text="Input number of courses", command=self.input_number_of_courses).pack()
+        tk.Button(self.master, text="Input course information", command=self.input_course_info).pack()
+        tk.Button(self.master, text="Select courses", command=self.select_course).pack()
+        tk.Button(self.master, text="Input marks", command=self.call_input_marks).pack()
+        tk.Button(self.master, text="List courses", command=self.list_courses).pack()
+        tk.Button(self.master, text="List students", command=self.list_students).pack()
+        tk.Button(self.master, text="Show marks", command=self.show_marks).pack()
+        tk.Button(self.master, text="Sort students by GPA descending", command=self.sort_gpa).pack()
+        tk.Button(self.master, text="Save Course Data", command=self.save_course_data).pack()
+        tk.Button(self.master, text="Save Student Data", command=self.save_student_data).pack()
+        tk.Button(self.master, text="Save Mark Data", command=self.save_mark_data).pack()
+        tk.Button(self.master, text="Load Course Data", command=self.load_course_data).pack()
+        tk.Button(self.master, text="Load Student Data", command=self.load_student_data).pack()
+        tk.Button(self.master, text="Load Mark Data", command=self.load_mark_data).pack()
+        tk.Button(self.master, text="Exit", command=self.master.quit).pack()
+
+    def save_course_data(self):
+        filename = tk.filedialog.asksaveasfilename(defaultextension=".pickle", filetypes=[("Pickle files", "*.pickle")])
+        if filename:
+            self.system.save_course_data(filename)
+            messagebox.showinfo("Success", "Course data saved successfully.")
+
+    def save_student_data(self):
+        filename = tk.filedialog.asksaveasfilename(defaultextension=".pickle", filetypes=[("Pickle files", "*.pickle")])
+        if filename:
+            self.system.save_student_data(filename)
+            messagebox.showinfo("Success", "Student data saved successfully.")
+
+    def save_mark_data(self):
+        filename = filedialog.asksaveasfilename(defaultextension=".pickle", filetypes=[("Pickle files", "*.pickle")])
+        if filename:
+            selected_course = self.simple_selection_dialog("Select a Course", [course.get_course_name() for course in self.system.get_courses()])
+            if selected_course:
+                marks = {}
+                for student in self.system.get_students():
+                    marks[student.get_student_name()] = student.get_marks().get(selected_course, None)
+                with open(filename, 'wb') as file:
+                    pickle.dump(marks, file)
+                messagebox.showinfo("Success", "Mark data saved successfully.")
+
+
+    def load_course_data(self):
+        filename = tk.filedialog.askopenfilename(filetypes=[("Pickle files", "*.pickle")])
+        if filename:
+            self.system.load_course_data(filename)
+            messagebox.showinfo("Success", "Course data loaded successfully.")
+
+    def load_student_data(self):
+        filename = tk.filedialog.askopenfilename(filetypes=[("Pickle files", "*.pickle")])
+        if filename:
+            self.system.load_student_data(filename)
+            messagebox.showinfo("Success", "Student data loaded successfully.")
+
+    def load_mark_data(self):
+        filename = tk.filedialog.askopenfilename(filetypes=[("Pickle files", "*.pickle")])
+        if filename:
+            self.system.load_mark_data(filename)
+            messagebox.showinfo("Success", "Mark data loaded successfully.")
 
     def input_number_of_students(self):
-        top = tk.Toplevel(self.master)
-        top.title("Input Number of Students")
-
-        label = tk.Label(top, text="Enter number of students:")
-        label.pack()
-
-        entry = tk.Entry(top)
-        entry.pack()
-
-        def save_number_of_students():
-            try:
-                num_students = int(entry.get())
-                if num_students < 0:
-                    messagebox.showerror("Error", "Number of students must be a non-negative integer")
-                else:
-                    self.system.set_number_of_students(num_students)
-                    messagebox.showinfo("Success", f"Number of students set to {num_students}")
-                    top.destroy()
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid number")
-
-        save_button = tk.Button(top, text="Save", command=save_number_of_students)
-        save_button.pack()
-
-    def input_number_of_courses(self):
-        top = tk.Toplevel(self.master)
-        top.title("Input Number of Courses")
-
-        label = tk.Label(top, text="Enter number of courses:")
-        label.pack()
-
-        entry = tk.Entry(top)
-        entry.pack()
-
-        def save_number_of_courses():
-            try:
-                num_courses = int(entry.get())
-                if num_courses < 0:
-                    messagebox.showerror("Error", "Number of courses must be a non-negative integer")
-                else:
-                    self.system.set_number_of_courses(num_courses)
-                    messagebox.showinfo("Success", f"Number of courses set to {num_courses}")
-                    top.destroy()
-            except ValueError:
-                messagebox.showerror("Error", "Please enter a valid number")
-
-        save_button = tk.Button(top, text="Save", command=save_number_of_courses)
-        save_button.pack()
+        self.number_of_students = simple_input_dialog("Input number of students")
+        messagebox.showinfo("Success", "Number of students set successfully.")
 
     def input_student_info(self):
-        top = tk.Toplevel(self.master)
-        top.title("Input Student Information")
+        if self.number_of_students == 0:
+            messagebox.showerror("Error", "Please input the number of students first.")
+            return
+        num_students = simple_input_dialog("Enter the number of students")
+        try:
+            num_students = int(num_students)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input for number of students.")
+            return
+        student_info_list = self.system.input_student_info(num_students)
+        messagebox.showinfo("Success", "Student information added successfully.")
 
-        label_id = tk.Label(top, text="Student ID:")
-        label_id.pack()
-
-        entry_id = tk.Entry(top)
-        entry_id.pack()
-
-        label_name = tk.Label(top, text="Student Name:")
-        label_name.pack()
-
-        entry_name = tk.Entry(top)
-        entry_name.pack()
-
-        label_dob = tk.Label(top, text="Date of Birth (YYYY-MM-DD):")
-        label_dob.pack()
-
-        entry_dob = tk.Entry(top)
-        entry_dob.pack()
-
-        def save_student_info():
-            student_id = entry_id.get()
-            student_name = entry_name.get()
-            student_dob = entry_dob.get()
-
-            if not (student_id and student_name and student_dob):
-                messagebox.showerror("Error", "Please fill in all fields")
-                return
-
-            if not self.system.check_for_valid_date(student_dob):
-                messagebox.showerror("Error", "Invalid date format. Please use YYYY-MM-DD")
-                return
-
-            student = Student(student_id, student_name, student_dob)
-            self.system.add_student(student)
-            messagebox.showinfo("Success", "Student information saved successfully")
-            top.destroy()
-
-        save_button = tk.Button(top, text="Save", command=save_student_info)
-        save_button.pack()
+    def input_number_of_courses(self):
+        self.number_of_courses = simple_input_dialog("Input number of courses")
+        messagebox.showinfo("Success", "Number of courses set successfully.")
 
     def input_course_info(self):
-        top = tk.Toplevel(self.master)
-        top.title("Input Course Information")
+        if self.number_of_courses == 0:
+            messagebox.showerror("Error", "Please input the number of courses first.")
+            return
+        num_courses = simple_input_dialog("Enter the number of courses")
+        try:
+            num_courses = int(num_courses)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid input for number of courses.")
+            return
+        course_info_list = self.system.input_course_info(num_courses)
+        messagebox.showinfo("Success", "Course information added successfully.")
 
-        label_id = tk.Label(top, text="Course ID:")
-        label_id.pack()
+    def select_course(self):
+        def on_course_selected(course):
+            self.selected_course = course
+            messagebox.showinfo("Success", f"Course '{course.get_course_name()}' selected successfully.")
+            select_window.destroy()
 
-        entry_id = tk.Entry(top)
-        entry_id.pack()
+        select_window = tk.Toplevel(self.master)
+        select_window.title("Select a Course")
+        select_window.geometry("300x200")
 
-        label_name = tk.Label(top, text="Course Name:")
-        label_name.pack()
+        for course in self.system.get_courses():
+            course_button = tk.Button(select_window, text=course.get_course_name(),
+                                      command=lambda c=course: on_course_selected(c))
+            course_button.pack(pady=5)
 
-        entry_name = tk.Entry(top)
-        entry_name.pack()
+    def input_marks(self, selected_course):
+        input_marks_window = tk.Toplevel(self.master)
+        input_marks_window.title(f"Input Marks for Students in {selected_course.get_course_name()}")
+        input_marks_window.geometry("400x300")
 
-        label_credits = tk.Label(top, text="Credits:")
-        label_credits.pack()
+        students = self.system.get_students()
+        for student in students:
+            frame = tk.Frame(input_marks_window)
+            frame.pack(padx=10, pady=5, fill=tk.X)
 
-        entry_credits = tk.Entry(top)
-        entry_credits.pack()
+            label = tk.Label(frame, text=f"{student.get_student_name()} (ID: {student.get_student_id()}):", anchor="w")
+            label.pack(side=tk.LEFT)
 
-        def save_course_info():
-            course_id = entry_id.get()
-            course_name = entry_name.get()
-            credits = entry_credits.get()
+            entry_var = tk.StringVar()
+            entry = tk.Entry(frame, textvariable=entry_var)
+            entry.pack(side=tk.LEFT, padx=10)
 
-            try:
-                credits = int(credits)
-                if credits <= 0:
-                    messagebox.showerror("Error", "Credits must be a positive integer")
-                    return
-            except ValueError:
-                messagebox.showerror("Error", "Credits must be a positive integer")
-                return
+            def set_mark(student=student, entry_var=entry_var):
+                try:
+                    mark = float(entry_var.get())
+                    self.system.set_mark(student.get_student_id(), selected_course.get_course_name(), mark)
+                    messagebox.showinfo("Success",
+                                        f"Mark set for {student.get_student_name()} in {selected_course.get_course_name()}: {mark}")
+                except ValueError:
+                    messagebox.showerror("Error", "Invalid mark. Please enter a numeric value.")
 
-            if not (course_id and course_name and credits):
-                messagebox.showerror("Error", "Please fill in all fields")
-                return
+            submit_button = tk.Button(frame, text="Set Mark", command=set_mark)
+            submit_button.pack(side=tk.RIGHT)
 
-            course = Course(course_id, course_name, credits)
-            self.system.add_course(course)
-            messagebox.showinfo("Success", "Course information saved successfully")
-            top.destroy()
-
-        save_button = tk.Button(top, text="Save", command=save_course_info)
-        save_button.pack()
-
-    def select_courses(self):
-        top = tk.Toplevel(self.master)
-        top.title("Select Courses")
-
-        label_student_id = tk.Label(top, text="Enter Student ID:")
-        label_student_id.pack()
-
-        entry_student_id = tk.Entry(top)
-        entry_student_id.pack()
-
-        label_course_ids = tk.Label(top, text="Enter Course IDs (comma separated):")
-        label_course_ids.pack()
-
-        entry_course_ids = tk.Entry(top)
-        entry_course_ids.pack()
-
-        def save_selected_courses():
-            student_id = entry_student_id.get()
-            course_ids = entry_course_ids.get().split(',')
-
-            if not (student_id and course_ids):
-                messagebox.showerror("Error", "Please fill in all fields")
-                return
-
-            for course_id in course_ids:
-                if not self.system.check_course_exist(course_id.strip()):
-                    messagebox.showerror("Error", f"Course with ID {course_id.strip()} does not exist")
-                    return
-
-            self.system.select_courses(student_id, course_ids)
-            messagebox.showinfo("Success", f"Courses selected successfully for student {student_id}")
-            top.destroy()
-
-        save_button = tk.Button(top, text="Save", command=save_selected_courses)
-        save_button.pack()
-
-    def input_marks(self):
-        top = tk.Toplevel(self.master)
-        top.title("Input Marks")
-
-        label_student_id = tk.Label(top, text="Enter Student ID:")
-        label_student_id.pack()
-
-        entry_student_id = tk.Entry(top)
-        entry_student_id.pack()
-
-        label_course_id = tk.Label(top, text="Enter Course ID:")
-        label_course_id.pack()
-
-        entry_course_id = tk.Entry(top)
-        entry_course_id.pack()
-
-        label_marks = tk.Label(top, text="Enter Marks:")
-        label_marks.pack()
-
-        entry_marks = tk.Entry(top)
-        entry_marks.pack()
-
-        def save_student_marks():
-            student_id = entry_student_id.get()
-            course_id = entry_course_id.get()
-            marks = entry_marks.get()
-
-            try:
-                marks = float(marks)
-            except ValueError:
-                messagebox.showerror("Error", "Marks must be a number")
-                return
-
-            if not (student_id and course_id and marks):
-                messagebox.showerror("Error", "Please fill in all fields")
-                return
-
-            if not self.system.check_student_course_exist(student_id, course_id):
-                messagebox.showerror("Error", "Student or Course does not exist")
-                return
-
-            self.system.input_marks(student_id, course_id, marks)
-            messagebox.showinfo("Success", "Marks saved successfully")
-            top.destroy()
-
-        save_button = tk.Button(top, text="Save", command=save_student_marks)
-        save_button.pack()
+    def call_input_marks(self):
+        if hasattr(self, 'selected_course'):
+            self.input_marks(self.selected_course)
+        else:
+            messagebox.showerror("Error", "Please select a course first.")
 
     def list_courses(self):
-        top = tk.Toplevel(self.master)
-        top.title("List Courses")
-
-        courses = self.system.list_courses()
-
-        if not courses:
-            label = tk.Label(top, text="No courses available")
-            label.pack()
-        else:
-            for course in courses:
-                label = tk.Label(top, text=course)
-                label.pack()
+        messagebox.showinfo("Courses", "\n".join([str(course) for course in self.system.get_courses()]))
 
     def list_students(self):
-        top = tk.Toplevel(self.master)
-        top.title("List Students")
-
-        students = self.system.list_students()
-
-        if not students:
-            label = tk.Label(top, text="No students available")
-            label.pack()
-        else:
-            for student in students:
-                label = tk.Label(top, text=student)
-                label.pack()
+        messagebox.showinfo("Students", "\n".join([str(student) for student in self.system.get_students()]))
 
     def show_marks(self):
-        top = tk.Toplevel(self.master)
-        top.title("Show Marks")
+        if not hasattr(self, 'selected_course'):
+            messagebox.showerror("Error", "Please select a course first.")
+            return
 
-        label_student_id = tk.Label(top, text="Enter Student ID:")
-        label_student_id.pack()
+        selected_course_name = self.selected_course.get_course_name()
+        marks = self.system.get_marks(selected_course_name)
 
-        entry_student_id = tk.Entry(top)
-        entry_student_id.pack()
-
-        def display_student_marks():
-            student_id = entry_student_id.get()
-
-            if not student_id:
-                messagebox.showerror("Error", "Please enter Student ID")
-                return
-
-            marks = self.system.show_marks(student_id)
-
-            if not marks:
-                label = tk.Label(top, text=f"No marks found for student {student_id}")
-                label.pack()
-            else:
-                for course_id, mark in marks.items():
-                    label = tk.Label(top, text=f"Course ID: {course_id}, Mark: {mark}")
-                    label.pack()
-
-        display_button = tk.Button(top, text="Display", command=display_student_marks)
-        display_button.pack()
-
-    def sort_students_by_gpa(self):
-        top = tk.Toplevel(self.master)
-        top.title("Sort Students by GPA")
-
-        sorted_students = self.system.sort_students_by_gpa()
-
-        if not sorted_students:
-            label = tk.Label(top, text="No students available")
-            label.pack()
+        if marks:
+            marks_str = "\n".join([f"{student.get_student_name()}: {marks[student.get_student_id()]}" for student in
+                                   self.system.get_students()])
+            messagebox.showinfo(f"Marks for {selected_course_name}", marks_str)
         else:
-            for student in sorted_students:
-                label = tk.Label(top, text=student)
-                label.pack()
+            messagebox.showinfo("No Marks", f"No marks found for {selected_course_name}")
 
+    def sort_gpa(self):
+        sorted_students = self.system.sort_gpa()
+        messagebox.showinfo("Sorted Students by GPA", "\n".join([f"{student} - GPA: {student.calc_gpa(self.system.get_courses()):.2f}" for student in sorted_students]))
+
+def simple_input_dialog(prompt):
+    return simple_dialog(prompt, tk.simpledialog.askstring)
+
+def simple_dialog(prompt, func):
+    return func("Input", prompt)
 
 def main():
     root = tk.Tk()
-    app = StudentManagementGUI(root)
+    app = MainApplication(root)
     root.mainloop()
 
 if __name__ == "__main__":
