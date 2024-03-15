@@ -2,11 +2,11 @@ import numpy as np
 
 
 class Student:
-    def __init__(self, student_id, student_name, student_dob):
+    def __init__(self, student_id, student_name, student_DoB):
         self.__student_id = student_id
         self.__student_name = student_name
-        self.__student_dob = student_dob
-        self.__marks = {}
+        self.__student_dob = student_DoB
+
 
     def get_student_id(self):
         return self.__student_id
